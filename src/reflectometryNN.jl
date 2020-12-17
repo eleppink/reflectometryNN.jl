@@ -144,11 +144,9 @@ Output is a NNOutput struct, with form:
         function losss(x,y)
             loss_check = sum(abs2,NN(x)-(y))
         end
-        timeTake = @elapsed begin
-            Threads.@threads for j in 1:1:epochs_num
+        Threads.@threads for j in 1:1:epochs_num
                 descent_param = learningrate*exp(-1*j*learningdecay)
-                Flux.train!(losss,Flux.params(NN),dataNN.data,optimizer(descent_param))#NADAM(descent_param[1], (0.9, 0.8)))
-            end
+                Flux.train!(losss,Flux.params(NN),dataNN.data,optimizer(descent_param))
         end
        NNOutput(NN, dataNN.normalizationRad)
     end
