@@ -5,8 +5,12 @@ module reflectometryNN
 
     mutable struct trainingData
         data
+        freqs
         measurement_max
         normalizationRad
+        XMode
+        B0
+        R0
     end
 
     struct NNOutput
@@ -14,37 +18,120 @@ module reflectometryNN
         normalizationRad::Float64
     end
 
-    function makeTrainingData(freq::Vector{Float64},dif_fits::Float64, coeffs_fit::Vector{Float64}, normalizationRad::Float64; trainingSpread::Float64 = 0.5)
-        data = (Array{Float64}(undef,length(freq),dif_fits),Array{Float64}(undef,length(freq),dif_fits))
+
+
+```
+Function to create neural network training data.
+
+Inputs:
+        freq::Vector{Float64}        -- Vector of frequencies of the reflectometry measurements (GHz)
+        dif_fits::Float64            -- The number of different profiles in a single batch (batch size)
+        coeffs_fit::Vector{Float64}  -- The 6 fit coefficients for the 5th order polynomial for plasma density in units of 1e19 (per cubic meter)
+                                            n(r) = 1e19*(coeffs_fit[1]*r^5+coeffs_fit[2]*r^4+coeffs_fit[3]*r^3+coeffs_fit[4]*r^2+coeffs_fit[5]*r^1+coeffs_fit[6])
+                                            where r=radius into the plasma from the plasma facing wall.
+        normalizationRad::Float64    -- The output radius normalization factor, that helps with training. Make output order 1-10.
+        calibration::Vector{Float64} -- Vector of calibrated group delay length (non-plasma length) at each frequency, for a given reflectometry measurement. Length in METERS.
+
+Optional inputs:
+        trainingSpread::Float64      -- The variation in the profiles, fraction of each coefficient. Default value is 0.5.
+        XMode::Bool                  -- A boolean if XMode is the desired profile (true or false). Default is false (OMode).
+        Xcutoff::String              -- The type of XMode cutoff ("LEFT" or "RIGHT").
+        Bmag::Float64                -- The magnetic field magnitude measured at major-radius R0 (Tesla)
+        R0::Float64                  -- The major-radial location of the magnetic field measurement (meters)
+
+    e.g. for the O-Mode HFS reflectometer on DIII-D
+    makeTrainingData(range(6, 27, length = 200), 1000, ,[2.181e5, -2.901e4, 1252, -16.14, 2.381, 0.03], 5e7; trainingSpread = 0.5)
+
+
+Output is a trainingData struct that includes:
+        trainingData.data             -- the simulated training profiles
+        trainingData.freqs            -- the frequency vector used for the measurements (GHz)
+        trainingData.measurement_max  -- the normalization used for each group delay in the batch
+        trainingData.normalizationRad -- the output radius normalization inputted into the function
+        trainingData.Xmode            -- Boolean that says if XMode was enabled
+        trainingData.B0               -- Magnitude of magnetic field for XMode (Tesla)
+        trainingData.R0               -- Major-radial location of magnetic field measurement for XMode (meters)
+```
+    function makeTrainingData(freq::Vector{Float64},dif_fits::Float64, coeffs_fit::Vector{Float64}, normalizationRad::Float64, calibration::Vector{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String, Bmag::Float64, R0::Float64)
+        if XMode
+            data = (Array{Float64}(undef,length(freq)+1,dif_fits),Array{Float64}(undef,length(freq),dif_fits))
+        else
+            data = (Array{Float64}(undef,length(freq),dif_fits),Array{Float64}(undef,length(freq),dif_fits))
+        end
         measurement_max = Array{Float64}(undef,(dif_fits))
+        radius = Array{Float64}(undef,length(freq))
+
         for j in 1:1:dif_fits
             monocheck=1
             local coeffs
             while monocheck==1
                 coeffs = [coeffs_fit[1]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[2]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[3]+trainingSpread*rand()*(-1)^rand(1:2),
                                 coeffs_fit[4]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[5]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[6]+trainingSpread*rand()*(-1)^rand(1:2)]
-                data_proposal = radCalc.Omode(freq,coeffs)
+                if XMode
+                    if Xcutoff=="LEFT"
+                        radius = radCalc.XModeL(freq,coeffs,Bmag,R0)
+                    elseif Xcutoff == "RIGHT"
+                        radius = radCalc.XModeR(freq,coeffs,Bmag,R0)
+                    end
+                else
+                    radius = radCalc.OMode(freq,coeffs)
+                end
                 monocheck=0
-                for j in 2:1:length(data_proposal)
-                    if (data_proposal[j] - data_proposal[j-1]) < 0
+                for j in 2:1:length(radius)
+                    if (radius[j] - radius[j-1]) < 0
                         monocheck=1
                         break
                     end
                 end
             end
-            radius = radCalc.Omode(freq,coeffs)
-            measurement= dphidw(coeffs)
-            measurement_max[j] = maximum(measurement)
-            data[1][:,j] = measurement/maximum(measurement)
-            data[2][:,j] = radius/maximum(measurement)/normalizationRad
+            if XMode
+                measurement = dphidw_xmode(freq,coeffs,calibration,Bmag,R0,radius)
+                data[1][1,j] = Bmag
+                data[1][2:end,j] = measurement/maximum(measurement)
+                measurement_max[j] = maximum(measurement)
+                data[2][:,j] = radius/maximum(measurement)/normalizationRad
+            else
+                measurement = dphidw_omode(freq,coeffs,calibration,radius)
+                data[1][:,j] = measurement/maximum(measurement)
+                measurement_max[j] = maximum(measurement)
+                data[2][:,j] = radius/maximum(measurement)/normalizationRad
+            end
         end
-        data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
 
-        trainingData(data_formated , measurement_max, normalizationRad)
+        if XMode
+            data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
+            output = trainingData(data_formated, freqs, measurement_max, normalizationRad, XMode, Bmag, R0)
+        else
+            data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
+            output = trainingData(data_formated, freqs, measurement_max, normalizationRad, XMode, NaN, NaN)
+        end
+
+        output
     end
 
 
-    function NeuralNet(dataNN::trainingData, freqs::Vector{Float64}, epochs_num::Int64; activation = sigmoid, optimizer = NADAM, learningrate = 1e-5, learningdecay = 1e-4, neurons=200, layers=2)
+
+```
+Function to create the neural network object
+
+Inputs:
+        dataNN:trainingData  -- a trainingData struct from the makeTrainingData() function
+        epochs_num::Int64    -- the number of epochs you wish to train the neural network for
+
+Optional inputs:
+        actication           -- the activation function used in the neural network. Default is sigmoid.
+        optimizer            -- the optimizer (descent algorithm) used in the neural network. Default is NADAM
+        learningrate         -- the initial optimizer learning rate. Default is 1e-5
+        learningdecay        -- the exponential factor of decay of the learning rate. Decay is 1e-4 per epoch.
+        neurons              -- the number of neurons. Default is 200.
+        layers               -- the number of layers in the neural network (2 or 3). Default is 2.
+
+Output is a NNOutput struct, with form:
+        NNOutput.NN               -- the neural network object.
+        NNoutput.normalizationRad -- the output radius normalization used for this neural network object
+
+```
+    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = sigmoid, optimizer = NADAM, learningrate = 1e-5, learningdecay = 1e-4, neurons=200, layers=2)
         local loss_check = 1
         if layers==2
             NN = Chain(Dense(length(freqs),neurons, activation ),
@@ -67,6 +154,13 @@ module reflectometryNN
     end
 
 
+```
+A function that simply saves an object (typically used for the NNOutput object to be used later).
+
+Inputs:
+        filename::String  -- the filename of the object, saved in current directory
+        object            -- the object to be saved, typically the NNOutput object for this use case
+```
     function save(filename::String, object)
         @save filename object
     end
