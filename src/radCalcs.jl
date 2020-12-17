@@ -1,6 +1,6 @@
 module radCalc
 
-```
+"""
 Function that calculates the radial cutoff location for the O-Mode cutoff, given a density profile.
 
 Inputs:
@@ -11,7 +11,8 @@ Inputs:
 
 Output:
         rvec -- radial location of each cutoff w.r.t the first wall (meters).
-```
+"""
+
     function OMode(freq::Vector{Float64},coeffs_fit::Vector{Float64})
         omega = freq .* 2.0 .* pi .* 1e9
         q = 1.6022e-19
@@ -34,7 +35,7 @@ Output:
 
 
 
-```
+"""
 Function that calculates the radial cutoff location for the X-Mode R cutoff, given a density profile.
 
 Inputs:
@@ -47,7 +48,7 @@ Inputs:
 
 Output:
         rvec -- radial location of each cutoff w.r.t the first wall (meters).
-```
+"""
     function XModeR(freq::Vector{Float64},coeffs_fit::Vector{Float64}, Bmag::Float64, r0::Float64)
         omega = freq .* 2.0 .* pi .* 1e9
         q = 1.6022e-19
@@ -73,7 +74,7 @@ Output:
 
 
 
-```
+"""
 Function that calculates the radial cutoff location for the X-Mode L cutoff, given a density profile.
 
 Inputs:
@@ -86,7 +87,7 @@ Inputs:
 
 Output:
         rvec -- radial location of each cutoff w.r.t the first wall (meters).
-```
+"""
     function XModeL(freq::Vector{Float64},coeffs_fit::Vector{Float64}, BMag::Float64, r0::Float64)
         omega = freq .* 2.0 .* pi .* 1e9
         q = 1.6022e-19

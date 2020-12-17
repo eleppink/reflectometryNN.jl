@@ -20,7 +20,7 @@ module reflectometryNN
 
 
 
-```
+"""
 Function to create neural network training data.
 
 Inputs:
@@ -51,7 +51,7 @@ Output is a trainingData struct that includes:
         trainingData.Xmode            -- Boolean that says if XMode was enabled
         trainingData.B0               -- Magnitude of magnetic field for XMode (Tesla)
         trainingData.R0               -- Major-radial location of magnetic field measurement for XMode (meters)
-```
+"""
     function makeTrainingData(freq::Vector{Float64},dif_fits::Float64, coeffs_fit::Vector{Float64}, normalizationRad::Float64, calibration::Vector{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String, Bmag::Float64, R0::Float64)
         if XMode
             data = (Array{Float64}(undef,length(freq)+1,dif_fits),Array{Float64}(undef,length(freq),dif_fits))
@@ -111,7 +111,7 @@ Output is a trainingData struct that includes:
 
 
 
-```
+"""
 Function to create the neural network object
 
 Inputs:
@@ -130,7 +130,7 @@ Output is a NNOutput struct, with form:
         NNOutput.NN               -- the neural network object.
         NNoutput.normalizationRad -- the output radius normalization used for this neural network object
 
-```
+"""
     function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = sigmoid, optimizer = NADAM, learningrate = 1e-5, learningdecay = 1e-4, neurons=200, layers=2)
         local loss_check = 1
         if layers==2
@@ -152,13 +152,13 @@ Output is a NNOutput struct, with form:
     end
 
 
-```
+"""
 A function that simply saves an object (typically used for the NNOutput object to be used later).
 
 Inputs:
         filename::String  -- the filename of the object, saved in current directory
         object            -- the object to be saved, typically the NNOutput object for this use case
-```
+"""
     function save(filename::String, object)
         @save filename object
     end

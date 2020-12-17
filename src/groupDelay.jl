@@ -1,7 +1,7 @@
 include("radCalcs.jl")
 using QuadGK
 
-```
+"""
 Function for calculating the OMode group delay.
 
 Inputs:
@@ -15,7 +15,7 @@ Inputs:
 
 Output:
         ophiw   -- the group delay at each frequency in freq
-```
+"""
 function dphidw_omode(freq::Vector{Float64}, coeffs_fit::Vector{Float64},calibration::Vector{Float64},rad::Vector{Float64})
     ophi = Array{Float64}(undef,length(freq))
     for j in 1:1:length(freq)
@@ -34,7 +34,7 @@ end
 
 
 
-```
+"""
 Function for calculating the XMode group delay.
 
 Inputs:
@@ -49,7 +49,7 @@ Inputs:
 
 Output:
         ophiw -- the group delay at each frequency in freq
-```
+"""
 function dphidw_xmode(freq::Vector{Float64}, coeffs_fit::Vector{Float64}, calibration::Vector{Float64}, Bmag::Float64, startingRad::Float64,rad::Vector{Float64})
     ophi = Array{Float64}(undef,length(freq))
     for j in 1:1:length(freq)
@@ -67,7 +67,7 @@ function dphidw_xmode(freq::Vector{Float64}, coeffs_fit::Vector{Float64}, calibr
 end
 
 
-```
+"""
 Function for calculating the OMode index of refraction
 
 Inputs:
@@ -79,7 +79,7 @@ Inputs:
 
 Output:
         -- the OMode index of refraction
-```
+"""
 function refractive_omode(x::Float64; coeffs::Vector{Float64}, omega::Float64)
     q = 1.6022e-19
     me = 9.109e-31
@@ -90,7 +90,7 @@ function refractive_omode(x::Float64; coeffs::Vector{Float64}, omega::Float64)
 end
 
 
-```
+"""
 Function for calculating the XMode index of refraction
 
 Inputs:
@@ -104,7 +104,7 @@ Inputs:
 
 Output:
         -- the XMode index of refraction
-```
+"""
 function refractive_xmode(x::Float64; coeffs::Vector{Float64}, omega::Float64, b0::Float64, r0::Float64)
     q = 1.6022e-19
     me = 9.109e-31
