@@ -3,6 +3,12 @@ uuid = "fc0b70aa-430f-4163-bf89-bc048e9d8e96"
 authors = ["Evan Leppink"]
 version = "0.1.0"
 
+[deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+
 [compat]
 julia = "1"
 
