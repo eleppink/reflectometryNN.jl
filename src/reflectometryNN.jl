@@ -24,20 +24,20 @@ module reflectometryNN
 Function to create neural network training data.
 
 Inputs:
-        freq::Vector{Float64}        -- Vector of frequencies of the reflectometry measurements (GHz)
-        dif_fits::Float64            -- The number of different profiles in a single batch (batch size)
-        coeffs_fit::Vector{Float64}  -- The 6 fit coefficients for the 5th order polynomial for plasma density in units of 1e19 (per cubic meter)
+        freq                         -- Vector of frequencies of the reflectometry measurements (GHz)
+        dif_fits::Int64              -- The number of different profiles in a single batch (batch size)
+        coeffs_fit::Array{Float64}   -- The 6 fit coefficients for the 5th order polynomial for plasma density in units of 1e19 (per cubic meter)
                                             n(r) = 1e19*(coeffs_fit[1]*r^5+coeffs_fit[2]*r^4+coeffs_fit[3]*r^3+coeffs_fit[4]*r^2+coeffs_fit[5]*r^1+coeffs_fit[6])
                                             where r=radius into the plasma from the plasma facing wall.
-        normalizationRad::Float64    -- The output radius normalization factor, that helps with training. Make output order 1-10.
-        calibration::Vector{Float64} -- Vector of calibrated group delay length (non-plasma length) at each frequency, for a given reflectometry measurement. Length in METERS.
+        normalizationRad::Number     -- The output radius normalization factor, that helps with training. Make output order 1-10.
+        calibration::Array{Float64}  -- Vector of calibrated group delay length (non-plasma length) at each frequency, for a given reflectometry measurement. Length in METERS.
 
 Optional inputs:
         trainingSpread::Float64      -- The variation in the profiles, fraction of each coefficient. Default value is 0.5.
         XMode::Bool                  -- A boolean if XMode is the desired profile (true or false). Default is false (OMode).
         Xcutoff::String              -- The type of XMode cutoff ("LEFT" or "RIGHT").
-        Bmag::Float64                -- The magnetic field magnitude measured at major-radius R0 (Tesla)
-        R0::Float64                  -- The major-radial location of the magnetic field measurement (meters)
+        Bmag::Number                 -- The magnetic field magnitude measured at major-radius R0 (Tesla)
+        R0::Number                   -- The major-radial location of the magnetic field measurement (meters)
 
     e.g. for the O-Mode HFS reflectometer on DIII-D
     makeTrainingData(range(6, 27, length = 200), 1000, ,[2.181e5, -2.901e4, 1252, -16.14, 2.381, 0.03], 5e7; trainingSpread = 0.5)
@@ -52,7 +52,7 @@ Output is a trainingData struct that includes:
         trainingData.B0               -- Magnitude of magnetic field for XMode (Tesla)
         trainingData.R0               -- Major-radial location of magnetic field measurement for XMode (meters)
 """
-    function makeTrainingData(freq::AbstractArray,dif_fits::Int64, coeffs_fit::Array{Float64}, normalizationRad::Float64, calibration::Array{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String, Bmag::Float64, R0::Float64)
+    function makeTrainingData(freq,dif_fits::Int64, coeffs_fit::Array{Float64}, normalizationRad::Number, calibration::Array{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String, Bmag::Number, R0::Number)
         if XMode
             data = (Array{Float64}(undef,length(freq)+1,dif_fits),Array{Float64}(undef,length(freq),dif_fits))
         else
