@@ -52,7 +52,7 @@ Output is a trainingData struct that includes:
         trainingData.B0               -- Magnitude of magnetic field for XMode (Tesla)
         trainingData.R0               -- Major-radial location of magnetic field measurement for XMode (meters)
 """
-    function makeTrainingData(freq::Vector{Float64},dif_fits::Float64, coeffs_fit::Vector{Float64}, normalizationRad::Float64, calibration::Vector{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String, Bmag::Float64, R0::Float64)
+    function makeTrainingData(freq::AbstractArray,dif_fits::Int64, coeffs_fit::Array{Float64}, normalizationRad::Float64, calibration::Array{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String, Bmag::Float64, R0::Float64)
         if XMode
             data = (Array{Float64}(undef,length(freq)+1,dif_fits),Array{Float64}(undef,length(freq),dif_fits))
         else
