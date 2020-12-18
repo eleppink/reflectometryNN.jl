@@ -131,21 +131,21 @@ Output is a NNOutput struct, with form:
         NNoutput.normalizationRad -- the output radius normalization used for this neural network object
 
 """
-    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = sigmoid, optimizer = NADAM, learningrate = 1e-5, learningdecay = 1e-4, neurons=200, layers=2)
+    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = NADAM, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-3, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-8)
         local loss_check = 1
         if layers==2
-            NN = Chain(Dense(length(freqs),neurons, activation ),
-                        Dense(neurons,length(freqs)))
+            NN = Chain(Dense(length(dataNN.freqs),neurons, activation ),
+                        Dense(neurons,length(dataNN.freqs)))
         else
-            NN = Chain(Dense(length(freqs),neurons, activation ),
+            NN = Chain(Dense(length(dataNN.freqs),neurons, activation ),
                         Dense(neurons, neurons, activation),
-                        Dense(neurons,length(freqs)))
+                        Dense(neurons,length(dataNN.freqs)))
         end
         function losss(x,y)
             loss_check = sum(abs2,NN(x)-(y))
         end
         Threads.@threads for j in 1:1:epochs_num
-                descent_param = learningrate*exp(-1*j*learningdecay)
+                descent_param = max(min_learningrate,learningrate*exp(-1*j*learningdecay))
                 Flux.train!(losss,Flux.params(NN),dataNN.data,optimizer(descent_param))
         end
        NNOutput(NN, dataNN.normalizationRad)
