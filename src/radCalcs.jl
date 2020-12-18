@@ -60,7 +60,7 @@ Output:
         for j in 1:1:length(rvec)
             while wcutoff < omega[j]
                 rtest = rtest + 0.00001
-                wce = Bmag / (rtest+r0) * q / me
+                wce = BMag / (rtest+r0) * q / me
                 density = 1e19*(coeffs_fit[1]*(rtest)^5+coeffs_fit[2]*(rtest)^4+coeffs_fit[3]*(rtest)^3+coeffs_fit[4]*(rtest)^2+coeffs_fit[5]*(rtest)+coeffs_fit[6])
                 wpe = sqrt(max(0,(q)^2*density/(e0*me)))
                 wcutoff = 0.5*(wce+sqrt(wce^2+4*wpe^2))
@@ -99,7 +99,7 @@ Output:
         for j in 1:1:length(rvec)
             while wcutoff < omega[j]
                 rtest = rtest + 0.00001
-                wce = Bmag / (rtest+r0) * q / me
+                wce = BMag / (rtest+r0) * q / me
                 density = 1e19*(coeffs_fit[1]*(rtest)^5+coeffs_fit[2]*(rtest)^4+coeffs_fit[3]*(rtest)^3+coeffs_fit[4]*(rtest)^2+coeffs_fit[5]*(rtest)+coeffs_fit[6])
                 wpe = sqrt(max(0,(q)^2*density/(e0*me)))
                 wcutoff = 0.5*(-wce+sqrt(wce^2+4*wpe^2))
