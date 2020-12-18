@@ -1,5 +1,5 @@
 module reflectometryNN
-
+    using ForwardDiff
     using Flux
     using BSON: @save
     include("groupDelay.jl")
