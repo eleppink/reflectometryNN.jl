@@ -65,25 +65,32 @@ Output is a trainingData struct that includes:
         for j in 1:1:dif_fits
             monocheck=1
             local coeffs
-            while monocheck==1
+            monocheck=true
+            while monocheck
                 coeffs = [coeffs_fit[1]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[2]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[3]+trainingSpread*rand()*(-1)^rand(1:2),
                                 coeffs_fit[4]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[5]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[6]+trainingSpread*rand()*(-1)^rand(1:2)]
-                if XMode
-                    if Xcutoff=="LEFT"
-                        radius,density = radCalc.XModeL(freq,coeffs,Bmag,R0)
-                    elseif Xcutoff == "RIGHT"
-                        radius,density = radCalc.XModeR(freq,coeffs,Bmag,R0)
+
+                    density(x) = 1e19*(coeffs[1]*(x)^5+coeffs[2]*(x)^4+coeffs[3]*(x)^3+coeffs[4]*(x)^2+coeffs[5]*(x)+coeffs[6])
+                    xtest=0
+                    while  density(xtest) < (freq[end]*2*pi*1e9)^2*8.854e-12*9.109e-31/(1.6022e-19)^2
+                        xtest += 0.0001
+                        if ForwardDiff.derivative(density,xtest) < 0
+                            monocheck=true
+                            break
+                        end
                     end
-                else
-                    radius,density = radCalc.OMode(freq,coeffs)
-                end
-                monocheck=0
-                for j in 2:1:length(radius)
-                    if (radius[j] - radius[j-1]) < 0
-                        monocheck=1
-                        break
+                    if density(xtest) > (freq[end]*2*pi*1e9)^2*8.854e-12*9.109e-31/(1.6022e-19)^2
+                        monocheck=false
                     end
+            end
+            if XMode
+                if Xcutoff=="LEFT"
+                    radius,density = radCalc.XModeL(freq,coeffs,Bmag,R0)
+                elseif Xcutoff == "RIGHT"
+                    radius,density = radCalc.XModeR(freq,coeffs,Bmag,R0)
                 end
+            else
+                radius,density = radCalc.OMode(freq,coeffs)
             end
             if XMode
                 measurement = dphidw_xmode(freq,coeffs,calibration,Bmag,R0,radius)
@@ -132,7 +139,7 @@ Output is a NNOutput struct, with form:
         NNoutput.normalizationRad -- the output radius normalization used for this neural network object
 
 """
-    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = RMSProp, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-4, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-6,print_epoch::Number = 1000)
+    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = RMSProp, learningrate::Float64 = 1e-4, learningdecay::Float64 = 0.001, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-6,print_epoch::Number = 1000)
         local loss_check = 1
         local loss_count = 0
         if layers==2
