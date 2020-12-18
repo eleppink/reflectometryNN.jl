@@ -160,7 +160,7 @@ Output is a NNOutput struct, with form:
         function losss(x,y)
             loss_check = sum(abs2,NN(x)-(y))
         end
-        for j in 1:1:epochs_num
+        Threads.@threads for j in 1:1:epochs_num
                 if j % print_epoch == 0
                     loss_count += 1
                     print(string(loss_count), string(" / "), string(round(epochs_num/print_epoch)), string(":  "), string(loss_check), string("\n"))
