@@ -1,10 +1,8 @@
 module reflectometryNN
 
     using Flux
-    using LinearAlgebra
     using BSON: @save
     include("groupDelay.jl")
-    BLAS.set_num_threads(1)
     mutable struct trainingData
         data
         density
