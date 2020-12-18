@@ -5,6 +5,7 @@ module reflectometryNN
     include("groupDelay.jl")
     mutable struct trainingData
         data
+        density
         freqs
         measurement_max
         normalizationRad
@@ -69,12 +70,12 @@ Output is a trainingData struct that includes:
                                 coeffs_fit[4]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[5]+trainingSpread*rand()*(-1)^rand(1:2), coeffs_fit[6]+trainingSpread*rand()*(-1)^rand(1:2)]
                 if XMode
                     if Xcutoff=="LEFT"
-                        radius = radCalc.XModeL(freq,coeffs,Bmag,R0)
+                        radius,density = radCalc.XModeL(freq,coeffs,Bmag,R0)
                     elseif Xcutoff == "RIGHT"
-                        radius = radCalc.XModeR(freq,coeffs,Bmag,R0)
+                        radius,density = radCalc.XModeR(freq,coeffs,Bmag,R0)
                     end
                 else
-                    radius = radCalc.OMode(freq,coeffs)
+                    radius,density = radCalc.OMode(freq,coeffs)
                 end
                 monocheck=0
                 for j in 2:1:length(radius)
@@ -100,10 +101,10 @@ Output is a trainingData struct that includes:
 
         if XMode
             data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
-            output = trainingData(data_formated, freq, measurement_max, normalizationRad, XMode, Bmag, R0)
+            output = trainingData(data_formated, density, freq, measurement_max, normalizationRad, XMode, Bmag, R0)
         else
             data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
-            output = trainingData(data_formated, freq, measurement_max, normalizationRad, XMode, NaN, NaN)
+            output = trainingData(data_formated, density, freq, measurement_max, normalizationRad, XMode, NaN, NaN)
         end
 
         output

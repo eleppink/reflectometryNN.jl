@@ -19,6 +19,7 @@ Output:
         me = 9.109e-31
         e0 = 8.854e-12
         rvec = zeros(length(omega))
+        dvec = zeros(length(omega))
         rtest = 0
         wpe = 0
         for j in 1:1:length(rvec)
@@ -28,9 +29,10 @@ Output:
                 wpe = sqrt(max(0,(q)^2*density/(e0*me)))
             end
             rvec[j]=rtest
+            dvec[j]=density
         end
 
-        rvec
+        rvec,dvec
     end
 
 
@@ -55,6 +57,7 @@ Output:
         me = 9.109e-31
         e0 = 8.854e-12
         rvec = zeros(length(omega))
+        dvec = zeros(length(omega))
         rtest = 0
         wcutoff = 0
         for j in 1:1:length(rvec)
@@ -66,9 +69,10 @@ Output:
                 wcutoff = 0.5*(wce+sqrt(wce^2+4*wpe^2))
             end
             rvec[j]=rtest
+            dvec[j]=density
         end
 
-        rvec
+        rvec,dvec
     end
 
 
@@ -94,6 +98,7 @@ Output:
         me = 9.109e-31
         e0 = 8.854e-12
         rvec = zeros(length(omega))
+        dvec = zeros(length(omega))
         rtest = 0
         wcutoff = 0
         for j in 1:1:length(rvec)
@@ -105,9 +110,10 @@ Output:
                 wcutoff = 0.5*(-wce+sqrt(wce^2+4*wpe^2))
             end
             rvec[j]=rtest
+            dvec[j]=density
         end
 
-        rvec
+        rvec,dvec
     end
 
 end
