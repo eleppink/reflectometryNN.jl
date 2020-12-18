@@ -100,10 +100,10 @@ Output is a trainingData struct that includes:
 
         if XMode
             data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
-            output = trainingData(data_formated, freqs, measurement_max, normalizationRad, XMode, Bmag, R0)
+            output = trainingData(data_formated, freq, measurement_max, normalizationRad, XMode, Bmag, R0)
         else
             data_formated = Flux.Data.DataLoader(data;batchsize=dif_fits,shuffle=false,partial=true)
-            output = trainingData(data_formated, freqs, measurement_max, normalizationRad, XMode, NaN, NaN)
+            output = trainingData(data_formated, freq, measurement_max, normalizationRad, XMode, NaN, NaN)
         end
 
         output
