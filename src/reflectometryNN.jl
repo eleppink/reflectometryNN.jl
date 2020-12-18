@@ -1,8 +1,10 @@
 module reflectometryNN
 
     using Flux
+    using LinearAlgebra
     using BSON: @save
     include("groupDelay.jl")
+    BLAS.set_num_threads(1)
     mutable struct trainingData
         data
         density
@@ -132,7 +134,7 @@ Output is a NNOutput struct, with form:
         NNoutput.normalizationRad -- the output radius normalization used for this neural network object
 
 """
-    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = RMSProp, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-4, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-6)
+    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = RMSProp, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-4, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-6,print_epoch::Number = 1000)
         local loss_check = 1
         if layers==2
             if dataNN.XMode
@@ -158,6 +160,10 @@ Output is a NNOutput struct, with form:
             loss_check = sum(abs2,NN(x)-(y))
         end
         Threads.@threads for j in 1:1:epochs_num
+                if j % print_epoch == 0
+                    loss_count += 1
+                    print(string(loss_count), string(" / "), string(round(epochs_num/print_epoch)), string(":  "), string(loss_check))
+                end
                 descent_param = max(min_learningrate,learningrate*exp(-1*j*learningdecay))
                 Flux.train!(losss,Flux.params(NN),dataNN.data,optimizer(descent_param))
         end
