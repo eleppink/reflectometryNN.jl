@@ -22,6 +22,7 @@ Output:
         dvec = zeros(length(omega))
         rtest = 0
         wpe = 0
+        local density
         for j in 1:1:length(rvec)
             while wpe < omega[j]
                 rtest = rtest + 0.00001
@@ -60,6 +61,7 @@ Output:
         dvec = zeros(length(omega))
         rtest = 0
         wcutoff = 0
+        local density
         for j in 1:1:length(rvec)
             while wcutoff < omega[j]
                 rtest = rtest + 0.00001
@@ -101,6 +103,7 @@ Output:
         dvec = zeros(length(omega))
         rtest = 0
         wcutoff = 0
+        local density
         for j in 1:1:length(rvec)
             while wcutoff < omega[j]
                 rtest = rtest + 0.00001
