@@ -61,7 +61,7 @@ Output is a trainingData struct that includes:
         end
         measurement_max = Array{Float64}(undef,(dif_fits))
         radius = Array{Float64}(undef,length(freq))
-
+        density = Array{Float64}(undef,length(freq))
         for j in 1:1:dif_fits
             monocheck=1
             local coeffs
