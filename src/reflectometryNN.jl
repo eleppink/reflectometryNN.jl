@@ -1,8 +1,9 @@
 module reflectometryNN
+
     using Flux
     using BSON: @save
     include("radCalcs.jl")
-
+    include("groupDelay.jl")
     mutable struct trainingData
         data
         freqs
@@ -52,7 +53,7 @@ Output is a trainingData struct that includes:
         trainingData.B0               -- Magnitude of magnetic field for XMode (Tesla)
         trainingData.R0               -- Major-radial location of magnetic field measurement for XMode (meters)
 """
-    function makeTrainingData(freq::Any,dif_fits::Int64, coeffs_fit::Array{Float64}, normalizationRad::Number, calibration::Array{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String="LEFT", Bmag::Number=0, R0::Number=0)
+    function makeTrainingData(freq,dif_fits::Int64, coeffs_fit::Array{Float64}, normalizationRad::Number, calibration::Array{Float64}; trainingSpread::Float64 = 0.5, XMode::Bool = false, Xcutoff::String="LEFT", Bmag::Number=0, R0::Number=0)
         if XMode
             data = (Array{Float64}(undef,length(freq)+1,dif_fits),Array{Float64}(undef,length(freq),dif_fits))
         else
