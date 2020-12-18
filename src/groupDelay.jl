@@ -16,7 +16,7 @@ Inputs:
 Output:
         ophiw   -- the group delay at each frequency in freq
 """
-function dphidw_omode(freq::Vector{Float64}, coeffs_fit::Vector{Float64},calibration::Vector{Float64},rad::Vector{Float64})
+function dphidw_omode(freq, coeffs_fit::Vector{Float64},calibration::Vector{Float64},rad::Vector{Float64})
     ophi = Array{Float64}(undef,length(freq))
     for j in 1:1:length(freq)
         ophi[j] = calibration[j] / 3e8 * (freq[j]*2*pi*1e9) + 2*(freq[j]*2*pi*1e9) / 3e8 * quadgk(x -> refractive_omode(x;coeffs = coeffs_fit, omega = freq[j]*2*pi*1e9),0,(rad[j]),rtol=1e-12)[1]
