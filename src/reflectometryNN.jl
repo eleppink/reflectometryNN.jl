@@ -4,7 +4,7 @@ module reflectometryNN
     using LinearAlgebra
     using BSON: @save
     include("groupDelay.jl")
-    BLAS.set_num_threads(16)
+    BLAS.set_num_threads(1)
     mutable struct trainingData
         data
         density
@@ -160,7 +160,7 @@ Output is a NNOutput struct, with form:
         function losss(x,y)
             loss_check = sum(abs2,NN(x)-(y))
         end
-        for j in 1:1:epochs_num
+        Threads.@threads for j in 1:1:epochs_num
                 if j % print_epoch == 0
                     loss_count += 1
                     print(string(loss_count), string(" / "), string(round(epochs_num/print_epoch)), string(":  "), string(loss_check), string("\n"))
