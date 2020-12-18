@@ -131,15 +131,27 @@ Output is a NNOutput struct, with form:
         NNoutput.normalizationRad -- the output radius normalization used for this neural network object
 
 """
-    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = NADAM, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-3, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-8)
+    function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = RMSProp, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-4, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-6)
         local loss_check = 1
         if layers==2
-            NN = Chain(Dense(length(dataNN.freqs),neurons, activation ),
+            if dataNN.XMode
+                NN = Chain(Dense(length(dataNN.freqs)+1,neurons, activation ),
                         Dense(neurons,length(dataNN.freqs)))
+            else
+                NN = Chain(Dense(length(dataNN.freqs),neurons, activation ),
+                        Dense(neurons,length(dataNN.freqs)))
+            end
+
         else
-            NN = Chain(Dense(length(dataNN.freqs),neurons, activation ),
+            if dataNN.XMode
+                NN = Chain(Dense(length(dataNN.freqs)+1,neurons, activation ),
                         Dense(neurons, neurons, activation),
                         Dense(neurons,length(dataNN.freqs)))
+            else
+                NN = Chain(Dense(length(dataNN.freqs),neurons, activation ),
+                        Dense(neurons, neurons, activation),
+                        Dense(neurons,length(dataNN.freqs)))
+            end
         end
         function losss(x,y)
             loss_check = sum(abs2,NN(x)-(y))
