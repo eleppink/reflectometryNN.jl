@@ -2,7 +2,6 @@ module reflectometryNN
 
     using Flux
     using BSON: @save
-    include("radCalcs.jl")
     include("groupDelay.jl")
     mutable struct trainingData
         data
