@@ -136,6 +136,7 @@ Output is a NNOutput struct, with form:
 """
     function NeuralNet(dataNN::trainingData, epochs_num::Int64; activation = swish, optimizer = RMSProp, learningrate::Float64 = 1e-4, learningdecay::Float64 = 1e-4, neurons::Int64=200, layers::Int64=2, min_learningrate::Float64=1e-6,print_epoch::Number = 1000)
         local loss_check = 1
+        local loss_count = 0
         if layers==2
             if dataNN.XMode
                 NN = Chain(Dense(length(dataNN.freqs)+1,neurons, activation ),
